@@ -9,9 +9,12 @@ library(stringr)
 library(ggpubr)
 library(extrafont)
 library(data.table)
+library(lubridate)
+
+file = "~/Documents/r/sample_results_long.csv"
 
 # Read the input CSV file
-data <- fread("~/Documents/r/sample_results_long.csv", 
+data <- fread(file, 
               header=TRUE, 
               select=c("timeStamp", "label", "elapsed", "success"))
 
@@ -29,7 +32,20 @@ colnames(data) <- c("timeStamp", "group","response", "success")
 
 theme_set (theme_light())
 
-#####GENERATE CANDLES CHART FUNCTION#####
+# prepare date for chart headings
+unique_dates <- unique(floor_date(data$timeStamp, unit = "days"))
+
+if (length(unique_dates) == 1) {
+  formatted_date <- format(unique_dates, "%d %b %Y")
+} else {
+  # If there are multiple dates, format them as "DD1-DD2 MMM YYYY"
+  start_date <- min(unique_dates)
+  end_date <- max(unique_dates)
+  formatted_date <- paste(format(start_date, "%d"), "-", format(end_date, "%d"), " ", format(end_date, "%b %Y"), sep = "")
+}
+
+####GENERATE CANDLES CHART FUNCTION####
+
 generate_candles_chart <- function (data_for_candles, values_more_than_percentile) {
   
   #calculate y-axis limits
@@ -88,7 +104,7 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
     
     scale_fill_manual(values = c("success" = success_color, "fail" = fail_color)) +
     
-    labs(x = "Time Interval, HH:MM:SS", y = "Response Time, ms", title = paste("Response Time Candles over time")) +
+    labs(x = "Time Interval, HH:MM:SS", y = "Response Time, ms", title = paste0("Response Time Candles over time ","(",formatted_date,")")) +
     guides(fill = "none") +
     scale_x_discrete(labels = function(x) format(strptime(x, "%Y-%m-%d %H:%M:%S"), "%H:%M:%S")) +
     scale_y_continuous(labels = label_comma(big.mark = ","), 
@@ -157,9 +173,9 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
   return(arranged_graphs2)
 }
 
-#####END OF GENERATE CHART FUNCTION#####
+####END OF GENERATE CHART FUNCTION####
 
-######CHART SETTINGS#####
+####CHART SETTINGS####
 quantity_of_candles = 30
 lower_quantile_setting = 0
 higher_quantile_setting = 0.95
@@ -185,7 +201,7 @@ legend_font_size = 2.7
 legend_header_font_size = 4.0
 legend_font_width = 2
 
-######GENERATE LEGEND######
+####GENERATE LEGEND####
 set.seed(1)
 y <- rnorm(100)
 legend_data_frame_generated <- data.frame(
@@ -390,7 +406,7 @@ legend_chart <- ggplot(legend_data_frame_generated, aes(x)) +
         axis.title.y = element_blank(),
         legend.position = "none",
         plot.title = element_text(hjust = 0.5, size = 9, face="bold"),
-        plot.margin = margin(60,0,80,0, "pt"),
+        plot.margin = margin(60,-10,80,-10, "pt"),
   )
 
 ####END OF LEGEND####
