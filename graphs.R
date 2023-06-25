@@ -39,7 +39,7 @@ generate_graph_conf <- function(data, x_axis_name, y_axis_name, title, include_p
     ) %>%
     arrange(desc(mean))
   
-  print (group_stats)
+  #print (group_stats)
   
   all_stats <- data %>%
     summarise(
@@ -184,7 +184,7 @@ generate_bars <- function(data, x_axis_name, y_axis_name, title) {
     ) %>%
     arrange(desc(mean))
   
-  print(group_stats)
+  #print(group_stats)
   
   group_colors <- viridis(2, begin = 0.2, end = 0.7)
   #print(group_colors)
@@ -198,7 +198,10 @@ generate_bars <- function(data, x_axis_name, y_axis_name, title) {
     geom_text(aes(label = round(mean, 2)), hjust = -0.2, position = position_nudge(y = 0.5), family = "Courier New", size = 3) +
     labs(x = "Average Latency", y = "Label") +
     ggtitle("Average Latency by Label") +
-    theme(axis.text.y = element_text(vjust = -1.5)) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank()
+      ) +
     scale_x_continuous(labels = comma, limits = c(0, x_limit_avg)) +
     scale_y_discrete(expand = expansion(mult = c(0, .055)))  # Adjust the expand argument
   
@@ -207,13 +210,33 @@ generate_bars <- function(data, x_axis_name, y_axis_name, title) {
     geom_bar(stat = "identity", fill = group_colors[2], width = 0.7, position = position_nudge(y = 0.5)) +
     geom_text(aes(label = round(percentile_95, 2)), hjust = -0.2, position = position_nudge(y = 0.5), family = "Courier New", size = 3) +
     labs(x = "95th Percentile", y = "") +
-    ggtitle("95th Percentile Latency by Label")+
-    theme(axis.text.y = element_text(vjust = -1.3)) +
+    ggtitle("95th Percentile")+
+    theme(axis.text.y = element_blank()) +
     scale_x_continuous(labels = comma, limits = c(0, x_limit_perc)) +
     scale_y_discrete(expand = expansion(mult = c(0, .055)))  # Adjust the expand argument
   
+  labels <- ggplot(group_stats, aes(y = group, x = mean)) +
+    geom_bar(stat = "identity", fill = group_colors[1], width = 0, position = position_nudge(y = 0.5)) + # Change width to 0
+    labs(x="x", y = "Label") +
+    ggtitle("asdasdasdasd") +
+    theme(
+      axis.text.y = element_text(vjust = -1.2),
+      axis.title.x = element_text(color = "transparent"),
+      axis.text.x = element_text(color = "transparent"),
+      plot.title = element_text(color = "transparent"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_blank(),
+      axis.ticks = element_blank(),
+      axis.title.y = element_text(margin = margin(0, 0, 0, 10, "pt")),
+      panel.border = element_blank()
+      ) + 
+    scale_x_continuous(labels = comma, limits = c(0, 0)) +
+    scale_y_discrete(expand = expansion(mult = c(0, .055))) 
+  
   # Arrange both charts on one plot
-  combined_plot <- grid.arrange(average_chart, percentile_chart, ncol = 2)
+  combined_plot <- grid.arrange(labels, average_chart, percentile_chart, ncol = 3, widths = c(0.3, 0.35, 0.35))
+  #combined_plot2 <- plot_grid(labels, average_chart, percentile_chart, widths = c(0.3, 0.35, 0.35), ncol = 3, nrow=1, align = "hv")
   
   return(combined_plot)
 }

@@ -7,11 +7,15 @@ library(extrafont)
 library(gridExtra)
 library(ggpubr)
 library(scales)
+library(data.table)
+library(cowplot)
 
 source("graphs.R")
 
+file = "~/Documents/r/sample_results_long.csv"
+
 # Read the input CSV file
-data <- fread("~/Documents/r/sample_results_short.csv", 
+data <- fread(file, 
               header=TRUE, 
               select=c("timeStamp", "label", "elapsed", "success"))
 
@@ -90,7 +94,7 @@ arranged_graphs_all <- grid.arrange(
   layout_matrix = rbind(c(1, 1, 2))
 )
 
-# Display the arranged graphs
+####Display the arranged graphs####
 
 #print arranged graphs
 print(graph_group_one)

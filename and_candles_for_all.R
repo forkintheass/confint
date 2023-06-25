@@ -10,6 +10,7 @@ library(ggpubr)
 library(extrafont)
 library(data.table)
 library(lubridate)
+library(cowplot)
 
 file = "~/Documents/r/sample_results_long.csv"
 
@@ -168,7 +169,8 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
   
   combined_plot <- ggarrange(additional_scale_chart, candles_chart, ncol = 1, heights = c(0.15, 0.85), align="v")
   
-  arranged_graphs2 <- ggarrange(combined_plot, legend_chart, nrow = 1, ncol = 2, widths = c(0.85, 0.15))
+  # arranged_graphs2 <- ggarrange(combined_plot, legend_chart, nrow = 1, ncol = 2, widths = c(0.85, 0.15))
+  arranged_graphs2 <- plot_grid(combined_plot, legend_chart, nrow = 1, ncol = 2, rel_widths = c(0.85, 0.15), greedy = true)
   
   return(arranged_graphs2)
 }
@@ -397,7 +399,7 @@ legend_chart <- ggplot(legend_data_frame_generated, aes(x)) +
   theme(aspect.ratio=3.5/1,
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        panel.border = element_blank(),
+#        panel.border = element_blank(),
         panel.background = element_rect(color = "grey", fill=NA, linewidth = 0.5),
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
@@ -405,8 +407,8 @@ legend_chart <- ggplot(legend_data_frame_generated, aes(x)) +
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
         legend.position = "none",
-        plot.title = element_text(hjust = 0.5, size = 9, face="bold"),
-        plot.margin = margin(60,-10,80,-10, "pt"),
+        plot.title = element_text(hjust = 0.5, size = 8.5, face="bold"),
+        plot.margin = margin(50,-10,70,-20, "pt")
   )
 
 ####END OF LEGEND####
