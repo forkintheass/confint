@@ -12,18 +12,53 @@ library(data.table)
 library(lubridate)
 library(cowplot)
 
-file = "~/Documents/r/sample_results_long.csv"
+####GENERATE DATA FOR YOUR CANDLES###
+generate_dataframe <- function(n, start_time, end_time, labels, elapsed_interval, success_prob) {
+  # Generate random timestamps within the defined range
+  timestamps <- as.POSIXct(runif(n, as.numeric(as.POSIXct(start_time)), as.numeric(as.POSIXct(end_time))), origin = "1970-01-01")
+  
+  # Randomly select labels from the pre-defined types
+  labels <- sample(labels, n, replace = TRUE)
+  
+  # Randomly generate elapsed times within the defined interval
+  elapsed <- sample(seq(elapsed_interval[1], elapsed_interval[2]), n, replace = TRUE)
+  
+  # Randomly generate success values with the defined probability
+  success_binom <- rbinom(n, 1, success_prob)
+  success <- ifelse(success_binom == 0, FALSE, TRUE)
+  
+  # Create the dataframe
+  df <- data.frame(timeStamp = timestamps, label = labels, elapsed = elapsed, success = success)
+  
+  return(df)
+}
 
-# Read the input CSV file
-data <- fread(file, 
-              header=TRUE, 
-              select=c("timeStamp", "label", "elapsed", "success"))
+# Example usage
+set.seed(123) # Setting seed for reproducibility
+n <- 1000
+start_time <- "2024-01-01 00:00:00"
+end_time <- "2024-01-01 01:00:00"
+labels <- c("Type1", "Type2", "Type3")
+elapsed_interval <- c(100, 10000) # Define the interval for elapsed time
+success_prob <- 0.8 # Probability for success
 
-data$timeStamp <- as.POSIXct(data$timeStamp, format = "%Y/%m/%d %H:%M:%OS")
+data <- generate_dataframe(n, start_time, end_time, labels, elapsed_interval, success_prob)
 colnames(data) <- c("timeStamp", "group","response", "success")
 
+# # ...OR READ DATA FROM FILE AND RENAME THE COLUMNS
+# file = "~/Documents/r/sample_results_long.csv"
+# 
+# # Read the input CSV file
+# data <- fread(file,
+#               header=TRUE,
+#               select=c("timeStamp", "label", "elapsed", "success"))
+# 
+# data$timeStamp <- as.POSIXct(data$timeStamp, format = "%Y/%m/%d %H:%M:%OS")
+# colnames(data) <- c("timeStamp", "group","response", "success")
+
+# ANOTHER WAY TO READ DATA
 #data <- fread("C:\\sample.csv",
-#              header=TRUE, 
+#              header=TRUE,
 #              select=c("timeStamp", "label", "elapsed", "success"),
 #              col.names = c("timeStamp", "label", "elapsed", "success"),
 #              colClasses=c(timeStamp = "POSIXct",label = "character",elapsed = "numeric", success = "logical"),
@@ -31,28 +66,74 @@ colnames(data) <- c("timeStamp", "group","response", "success")
 #              dec = ".",
 #              encoding = "UTF-8")
 
-theme_set (theme_light())
-
-# prepare date for chart headings
-unique_dates <- unique(floor_date(data$timeStamp, unit = "days"))
-
-if (length(unique_dates) == 1) {
-  formatted_date <- format(unique_dates, "%d %b %Y")
-} else {
-  # If there are multiple dates, format them as "DD1-DD2 MMM YYYY"
-  start_date <- min(unique_dates)
-  end_date <- max(unique_dates)
-  formatted_date <- paste(format(start_date, "%d"), "-", format(end_date, "%d"), " ", format(end_date, "%b %Y"), sep = "")
-}
-
 ####GENERATE CANDLES CHART FUNCTION####
-
-generate_candles_chart <- function (data_for_candles, values_more_than_percentile) {
+generate_candles_chart <- function (data_for_candles, selected_group) {
+  
+  theme_set (theme_light())
+  
+  #filter data frame
+  data_for_candles <- filter(data_for_candles, group == selected_group)
+  
+  # prepare date for chart headings
+  unique_dates <- unique(floor_date(data_for_candles$timeStamp, unit = "days"))
+  
+  if (length(unique_dates) == 1) {
+    formatted_date <- format(unique_dates, "%d %b %Y")
+  } else {
+    # If there are multiple dates, format them as "DD1-DD2 MMM YYYY"
+    start_date <- min(unique_dates)
+    end_date <- max(unique_dates)
+    formatted_date <- paste(format(start_date, "%d"), "-", format(end_date, "%d"), " ", format(end_date, "%b %Y"), sep = "")
+  }
+  
+  breaks <- seq(min(data_for_candles$timeStamp), max(data_for_candles$timeStamp) +1, length.out = quantity_of_candles + 1)
+  data_for_candles$interval <- cut(data_for_candles$timeStamp, breaks = breaks)
+  
+  #calculate the boxplots data
+  boxplot_data <- data_for_candles %>%
+    group_by(group, interval) %>%
+    reframe(
+      min_val = min(response),
+      max_val = max(response),
+      lower_quantile = quantile(response, lower_quantile_setting),
+      median_val = median(response),
+      upper_quantile = quantile(response, higher_quantile_setting),
+      success_true_ratio = sum(success == TRUE) / n(),
+      success_false_ratio = sum(success == FALSE) / n()
+    )
+  
+  #if the intervals are empty, fill them with empty values, so they are not skipped on chart
+  boxplot_data <- boxplot_data %>%
+    complete(group, interval, fill = list(
+      min_val = NA,
+      max_val = NA,
+      lower_quantile = NA,
+      median_val = NA,
+      upper_quantile = NA,
+      success_true_ratio = NA,
+      success_false_ratio = NA
+    ))
+  
+  #get the percentiles for all the intervals
+  percentile <- data_for_candles %>% 
+    group_by(group, interval) %>%
+    summarize(percentile = quantile(response, higher_quantile_setting, na.rm = TRUE))
+  
+  percentile <- as.data.frame(percentile) %>%
+    complete(group, interval, fill = list(
+      percentile = NA
+    ))
+  
+  # Filter data for response values higher than percentile within each interval
+  values_more_than_percentile <- data_for_candles %>%
+    inner_join(percentile, by = c("group", "interval")) %>%
+    group_by(group) %>%
+    filter(response > percentile)
   
   #calculate y-axis limits
-  y_axis_high_limit = maximum_size_of_y_axis_mult*max(data_for_candles$upper_quantile, na.rm = TRUE)
+  y_axis_high_limit = maximum_size_of_y_axis_mult*max(boxplot_data$upper_quantile, na.rm = TRUE)
   y_axis_low_limit = 0
-  
+        
   #filter and settings for the data that didn't fit on maid
   filtered_values_that_do_not_fit <- filter(values_more_than_percentile, response > y_axis_high_limit)
   y_axis_low_limit_add_chart = round(min(filtered_values_that_do_not_fit$response))
@@ -60,10 +141,16 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
   #filling absent intervals with some empty data
   #otherwise might be prblem with gridline sync and intervals will be skipped also
   absent_intervals <- setdiff(unique(data_for_candles$interval), filtered_values_that_do_not_fit$interval)
-  na_values <- data.frame(interval = absent_intervals, response = -1)
-  filtered_values_that_do_not_fit <- bind_rows(filtered_values_that_do_not_fit, na_values)
   
-  candles_chart <- ggplot(data_for_candles, aes(x = factor(interval))) +
+  if (length(absent_intervals) > 0) {
+    na_values <- data.frame(interval = absent_intervals, response = -1)
+    filtered_values_that_do_not_fit <- bind_rows(filtered_values_that_do_not_fit, na_values)
+  }
+  
+  # na_values <- data.frame(interval = absent_intervals, response = -1)
+  # filtered_values_that_do_not_fit <- bind_rows(filtered_values_that_do_not_fit, na_values)
+  
+  candles_chart <- ggplot(boxplot_data, aes(x = factor(interval))) +
     
     geom_rect(aes(fill = "success", 
                   xmin = as.numeric(interval) + 0.5 - boxplot_width / 2, 
@@ -124,7 +211,7 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
   additional_scale_chart <- ggplot(filtered_values_that_do_not_fit, aes(x = factor(interval))) +
     
     #boxplot is added in order to avoid sync issues of gridlines
-    geom_boxplot(data=filtered_boxplot_data,
+    geom_boxplot(data=boxplot_data,
                  aes(ymin = -lower_quantile, 
                      lower = -lower_quantile, 
                      middle = -median_val, 
@@ -169,13 +256,13 @@ generate_candles_chart <- function (data_for_candles, values_more_than_percentil
   
   combined_plot <- ggarrange(additional_scale_chart, candles_chart, ncol = 1, heights = c(0.15, 0.85), align="v")
   
-  # arranged_graphs2 <- ggarrange(combined_plot, legend_chart, nrow = 1, ncol = 2, widths = c(0.85, 0.15))
+  #arranged_graphs2 <- ggarrange(combined_plot, legend_chart, nrow = 1, ncol = 2, widths = c(0.85, 0.15))
+  
   arranged_graphs2 <- plot_grid(combined_plot, legend_chart, nrow = 1, ncol = 2, rel_widths = c(0.85, 0.15), greedy = true)
   
   return(arranged_graphs2)
+  
 }
-
-####END OF GENERATE CHART FUNCTION####
 
 ####CHART SETTINGS####
 quantity_of_candles = 30
@@ -411,64 +498,13 @@ legend_chart <- ggplot(legend_data_frame_generated, aes(x)) +
         plot.margin = margin(50,-10,70,-20, "pt")
   )
 
-####END OF LEGEND####
-
-####MAIN CHART START####
-
-breaks <- seq(min(data$timeStamp), max(data$timeStamp) +1, length.out = quantity_of_candles + 1)
-data$interval <- cut(data$timeStamp, breaks = breaks)
-
-#calculate the boxplots data
-boxplot_data <- data %>%
-  group_by(group, interval) %>%
-  reframe(
-    min_val = min(response),
-    max_val = max(response),
-    lower_quantile = quantile(response, lower_quantile_setting),
-    median_val = median(response),
-    upper_quantile = quantile(response, higher_quantile_setting),
-    success_true_ratio = sum(success == TRUE) / n(),
-    success_false_ratio = sum(success == FALSE) / n()
-  )
-
-#if the intervals are empty, fill them with empty values, so they are not skipped on chart
-boxplot_data <- boxplot_data %>%
-  complete(group, interval, fill = list(
-    min_val = NA,
-    max_val = NA,
-    lower_quantile = NA,
-    median_val = NA,
-    upper_quantile = NA,
-    success_true_ratio = NA,
-    success_false_ratio = NA
-  ))
-
-#get the percentiles for all the intervals
-percentile <- data %>% 
-  group_by(group, interval) %>%
-  summarize(percentile = quantile(response, higher_quantile_setting, na.rm = TRUE))
-
-percentile <- as.data.frame(percentile) %>%
-  complete(group, interval, fill = list(
-    percentile = NA
-  ))
-
-# Filter data for response values higher than percentile within each interval
-values_more_than_percentile <- data %>%
-  inner_join(percentile, by = c("group", "interval")) %>%
-  group_by(group) %>%
-  filter(response > percentile)
 
 #now divide by groups if needed
-unique_groups <- unique(boxplot_data$group)
+# unique_groups <- unique(data$group)
+# 
+# for (grp in unique_groups) {
+#   output_chart <- generate_candles_chart (data, grp)
+#   print(output_chart)
+# }
 
-for (grp in unique_groups) {
-  
-  #filter data by groups
-  filtered_boxplot_data <- filter(boxplot_data, group == grp)
-  filtered_values_more_than_percentile <- filter(values_more_than_percentile, group == grp)
-  
-  output_chart <- generate_candles_chart(filtered_boxplot_data, filtered_values_more_than_percentile)
-  print(output_chart)
-  
-}
+# generate_candles_chart (data, "DELETE: Content")

@@ -1,0 +1,82 @@
+---
+title: "A Quarto Page Showing confint examples"
+subtitle: "Inspired by Tufte Handout, Using Quarto"
+author: Vladimir Vakhlov
+date: "`r Sys.Date()`"
+format:
+    html: 
+      self-contained: true
+      grid: 
+        margin-width: 350px
+execute: 
+  echo: fenced
+reference-location: margin
+citation-location: margin
+---
+
+# Introduction
+
+# Candles
+text
+## Idea
+text
+##Example
+```{r setup}
+#| echo: false
+#| warning: false
+# Load required libraries
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(viridis)
+library(forcats)
+library(scales)
+library(stringr)
+library(ggpubr)
+library(extrafont)
+library(data.table)
+library(lubridate)
+library(cowplot)
+
+source("and_candles_for_all.R")
+
+generate_dataframe <- function(n, start_time, end_time, labels, elapsed_interval, success_prob) {
+  # Generate random timestamps within the defined range
+  timestamps <- as.POSIXct(runif(n, as.numeric(as.POSIXct(start_time)), as.numeric(as.POSIXct(end_time))), origin = "1970-01-01")
+  
+  # Randomly select labels from the pre-defined types
+  labels <- sample(labels, n, replace = TRUE)
+  
+  # Randomly generate elapsed times within the defined interval
+  elapsed <- sample(seq(elapsed_interval[1], elapsed_interval[2]), n, replace = TRUE)
+  
+  # Randomly generate success values with the defined probability
+  success_binom <- rbinom(n, 1, success_prob)
+  success <- ifelse(success_binom == 0, FALSE, TRUE)
+  
+  # Create the dataframe
+  df <- data.frame(timeStamp = timestamps, label = labels, elapsed = elapsed, success = success)
+  
+  return(df)
+}
+
+# Example usage
+set.seed(123) # Setting seed for reproducibility
+n <- 10000
+start_time <- "2024-01-01 00:00:00"
+end_time <- "2024-01-01 01:00:00"
+labels <- c("Type1", "Type2", "Type3")
+elapsed_interval <- c(100, 5000) # Define the interval for elapsed time
+success_prob <- 0.9 # Probability for success
+
+data <- generate_dataframe(n, start_time, end_time, labels, elapsed_interval, success_prob)
+colnames(data) <- c("timeStamp", "group","response", "success")
+
+```
+```{r}
+#| echo: false
+#| warning: false
+#| fig-width: 9
+#| fig-height: 5.5
+generate_candles_chart (data, "Type2")
+```
