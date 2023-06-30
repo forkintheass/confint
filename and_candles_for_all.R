@@ -34,7 +34,6 @@ generate_dataframe <- function(n, start_time, end_time, labels, elapsed_interval
 }
 
 # Example usage
-set.seed(123) # Setting seed for reproducibility
 n <- 1000
 start_time <- "2024-01-01 00:00:00"
 end_time <- "2024-01-01 01:00:00"
@@ -507,4 +506,4 @@ legend_chart <- ggplot(legend_data_frame_generated, aes(x)) +
 #   print(output_chart)
 # }
 
-# generate_candles_chart (data, "DELETE: Content")
+# generate_candles_chart (data, "Type1")
