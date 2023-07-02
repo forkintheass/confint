@@ -50,3 +50,46 @@ Call `generate_candles_chart(your_data, name_of_your_label)`.
 #### Settings
 
 Use `####CHART SETTINGS####`
+
+------------------------------------------------------------------------
+
+## distributions
+
+Builds distributions which reflects
+
+#### Examples
+
+![](images/distrib_single.png) ![](images/distrib_compar.png)
+
+#### Data
+
+Input the file with the following columns:
+
+```         
+response,group
+1605,Login
+1034,GetTime
+93,Logout
+```
+
+Or use built-in data generation.
+
+#### Idea
+
+This is a slightly enhanced distribution diagram.
+
+The idea is to drill-down onto intervals everything that is lying inside the limit (potentially: specified SLA) and then everything that is higher than this limit.
+
+Comparison of such distributions was always the trickiest thing: putting one semi-transparent layer over other makes it hard to distinguish what is what. So for the comparison a pattern-applied bars are quite suitable for this goal, however not available in all the tools.
+
+As an addition, the statistics for median value are added (which can be for sure changed to any other statistics, like 95 percentile) and handled when median is out of bound of the main chart.
+
+#### Usage
+
+For single distribution: `distrib_single(data_original, your_request_type_to_filter, your_sla))`.
+
+For comparison distribution: `distrib_single(data_original, data_original_name_for_legend, data_comparison, data_comparison_name_for_legend, your_request_type_to_filter, your_sla))`.
+
+#### Settings
+
+Use `####CHART SETTINGS####`

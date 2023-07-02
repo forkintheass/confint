@@ -49,12 +49,13 @@ colnames(data_comparison) <- c("timeStamp", "group","response", "success")
 #####Distribution for single data#####
 distrib_single <- function(data, type, limit) {
   
-  #Settings for the chart
+  ####CHART SETTINGS####
   bar_color = "#6a994e"
   bar_border = "#386641"
   intercept_color = "#bc4749"
   intercept_width = 0.7
-  intercept_alpha = 0.5
+  intercept_line_alpha = 0.8
+  intercept_text_alpha = intercept_line_alpha
   intercept_text_color = intercept_color
   intercept_text_size = 3.7
   data_labels_color = bar_border
@@ -81,24 +82,38 @@ distrib_single <- function(data, type, limit) {
     right_join(all_bins, by = "bin") %>%
     mutate(n = replace_na(n, 0))
   
+  if (median > max(data_summary$bin)) {
+    intercept_line_alpha = 0.0
+    xintercept_value = 0
+    annotate_x = max(data_summary$bin) + bin_size
+    annotate_angle = 0
+    annotate_label = paste0("Median: ", round(median, 1), " →")
+    
+  } else {
+    xintercept_value <- median
+    annotate_x = median
+    annotate_angle = 90
+    annotate_label = paste0("Median: ", round(median, 1))  
+  }
+  
   distrib <- ggplot(data_summary, aes(bin + bin_size/2, n / sum(n))) +
     geom_col(fill = bar_color,
              color = bar_border ) +
-    geom_vline(xintercept = median,
+    geom_vline(xintercept = xintercept_value,
                colour = intercept_color,
                linetype = "dashed", 
                linewidth = intercept_width, 
-               alpha = intercept_alpha) +
+               alpha = intercept_line_alpha) +
     annotate("text", 
-             x = median, 
+             x = annotate_x, 
              y = 1, 
-             label = paste0("Median: ", round(median, 1)), 
-             angle = 90, 
+             label = annotate_label, 
+             angle = annotate_angle, 
              vjust = 1.5, 
              hjust = 0.9, 
              color = intercept_text_color, 
              size = intercept_text_size,
-             alpha = intercept_alpha) +
+             alpha = intercept_text_alpha) +
     scale_x_continuous(breaks = scales::breaks_width(bin_size),
                        labels = function(x) {
                          ifelse(x == upper, 
@@ -134,12 +149,13 @@ distrib_compar <- function(data_orig,
                            data_compar_name,
                            type, 
                            limit) {
-  
+  ####CHART SETTINGS####
   bar_color = "#6a994e"
   bar_border = "#386641"
   intercept_color = "#bc4749"
   intercept_width = 0.7
-  intercept_alpha = 0.5
+  intercept_line_alpha = 0.8
+  intercept_text_alpha = intercept_line_alpha
   intercept_text_color = intercept_color
   intercept_text_size = 3.7
   data_labels_color = bar_border
@@ -175,6 +191,20 @@ distrib_compar <- function(data_orig,
   data_summary_comparison$type <- data_compar_name
   combined_data <- rbind(data_summary_main, data_summary_comparison)
   
+  if (median > max(combined_data$bin)) {
+    intercept_line_alpha = 0.0
+    xintercept_value = 0
+    annotate_x = max(combined_data$bin) + bin_size
+    annotate_angle = 0
+    annotate_label = paste0("Median: ", round(median, 1), " →")
+    
+  } else {
+    xintercept_value <- median
+    annotate_x = median
+    annotate_angle = 90
+    annotate_label = paste0("Median: ", round(median, 1))  
+  }
+  
   fill_values <- setNames(c(bar_color, rgb(1, 1, 1, 0)), c(data_orig_name, data_compar_name))
   
   #CHART
@@ -193,21 +223,21 @@ distrib_compar <- function(data_orig,
                      linewidth = 0.4,
                      pattern_alpha = pattern_alpha
     ) +
-    geom_vline(xintercept = median,
+    geom_vline(xintercept = xintercept_value,
                colour = intercept_color,
                linetype = "dashed", 
                linewidth = intercept_width, 
-               alpha = intercept_alpha) +
+               alpha = intercept_line_alpha) +
     annotate("text", 
-             x = median, 
+             x = annotate_x, 
              y = 1, 
-             label = paste0("Median: ", round(median, 1)), 
-             angle = 90, 
+             label = annotate_label, 
+             angle = annotate_angle, 
              vjust = 1.5, 
              hjust = 0.9, 
              color = intercept_text_color, 
              size = intercept_text_size,
-             alpha = intercept_alpha) +
+             alpha = intercept_text_alpha) +
     scale_x_continuous(breaks = scales::breaks_width(bin_size),
                        labels = function(x) {
                          ifelse(x == upper, 
@@ -253,4 +283,4 @@ distrib_compar <- function(data_orig,
 }
 
 distrib_single(data_original, "Type1", 4000)
-distrib_compar(data_original, "Original Data", data_comparison, "Comparison Data", "Type3", 10000)
+distrib_compar(data_original, "Original Data", data_comparison, "Comparison Data", "Type3", 5000)
