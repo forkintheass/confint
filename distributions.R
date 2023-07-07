@@ -4,7 +4,7 @@ library(ggplot2)
 library(dplyr)
 library(ggpattern)
 
-####GENERATE DATA FOR YOUR CANDLES###
+####GENERATE DATA FOR YOUR DISTRIBUTION###
 generate_dataframe <- function(n, start_time, end_time, labels, elapsed_interval, success_prob) {
   # Generate random timestamps within the defined range
   timestamps <- as.POSIXct(runif(n, as.numeric(as.POSIXct(start_time)), as.numeric(as.POSIXct(end_time))), origin = "1970-01-01")
@@ -64,24 +64,33 @@ distrib_single <- function(data, type, limit) {
   y_title = "Percentage of total quantity of requests"
   x_title = "Response bins, ms"
   
-  #filter the data for the particular request
+  #filter the data for the specified request
   data_filtered <- data %>% filter(group == type)
   
+  #calculate median; you can change that value to whatever you like 
+  #to be represented on chart
   median = median(data_filtered$response)
   
+  #set upper variable to incoming parameter
   upper = limit
   
   #set bin size to the 1/10 of the sla
   bin_size = upper/10
   
+  #generate all possible bins which will be used to fill missing bins, if any
   all_bins <- data.frame(bin = seq(0, upper, by = bin_size))
   
+  #create the final dataframe
   data_summary <- data_filtered %>%
+    #put each value into corresponding bin and then summarize them
     mutate(bin = if_else(response < upper, response %/% bin_size * bin_size, upper)) %>%
     summarize(n = n(), .by = bin) %>%
+    #join with empty all_bins and fill values with zero, if value doens't exist.
     right_join(all_bins, by = "bin") %>%
     mutate(n = replace_na(n, 0))
   
+  #this block is handling situation when median is out of bound of the chart
+  #by changing chart settings
   if (median > max(data_summary$bin)) {
     intercept_line_alpha = 0.0
     xintercept_value = 0
@@ -96,9 +105,12 @@ distrib_single <- function(data, type, limit) {
     annotate_label = paste0("Median: ", round(median, 1))  
   }
   
+  #main chart
   distrib <- ggplot(data_summary, aes(bin + bin_size/2, n / sum(n))) +
+    #main bars
     geom_col(fill = bar_color,
              color = bar_border ) +
+    #intercept line and annotation
     geom_vline(xintercept = xintercept_value,
                colour = intercept_color,
                linetype = "dashed", 
@@ -114,6 +126,8 @@ distrib_single <- function(data, type, limit) {
              color = intercept_text_color, 
              size = intercept_text_size,
              alpha = intercept_text_alpha) +
+    #x-axis handling which removes the last label and adds ">" to the previous
+    #at the same time keeping x-axis continuous
     scale_x_continuous(breaks = scales::breaks_width(bin_size),
                        labels = function(x) {
                          ifelse(x == upper, 
@@ -127,6 +141,10 @@ distrib_single <- function(data, type, limit) {
                        limits = c(0, max(data_summary$bin)+bin_size)) + 
     scale_y_continuous(labels = scales::percent,
                        limits = c(-0.015, 1)) +
+    #adding values to the top of each bar
+    #if the values are omitted then there is not enough space for them
+    #and you need to adjust this setting or pre-prepare y-coordinates
+    #which will handle these situations
     geom_text(aes(y = n / sum(n) + 0.075, label = scales::percent((n / sum(n)), accuracy = 0.1)),
               vjust = 1.5,
               color = data_labels_color,
@@ -143,6 +161,7 @@ distrib_single <- function(data, type, limit) {
 }
 
 #####Distribution comparison#####
+#follow comments on single distribution
 distrib_compar <- function(data_orig, 
                            data_orig_name, 
                            data_compar, 
@@ -205,6 +224,7 @@ distrib_compar <- function(data_orig,
     annotate_label = paste0("Median: ", round(median, 1))  
   }
   
+  #this one is needed for the legend
   fill_values <- setNames(c(bar_color, rgb(1, 1, 1, 0)), c(data_orig_name, data_compar_name))
   
   #CHART
@@ -212,6 +232,7 @@ distrib_compar <- function(data_orig,
     geom_col(aes(fill = type),
              data = subset(combined_data, type == data_orig_name),
              color = bar_border) +
+    #pattern columns
     geom_col_pattern(aes(fill = type),
                      data = subset(combined_data, type == data_compar_name),
                      pattern = "stripe",
@@ -251,12 +272,15 @@ distrib_compar <- function(data_orig,
                        limits = c(0, max(data_summary_main$bin)+bin_size)) + 
     scale_y_continuous(labels = scales::percent,
                        limits = c(-0.05, 1)) +
+    #in this version percentage and quantity is moved below the chart area
+    #adjust y-coordinates or the y-axis limits if these do not fit
     geom_text(data = subset(combined_data, type == data_orig_name),
               aes(label = scales::percent((n / sum(n)), accuracy = 0.1)), 
               vjust = 1.5, 
               y = -0.01, 
               color = data_labels_color,
               size = data_labels_size) +
+    #this is quantity of requests, omit if you don't need it
     geom_text(data = subset(combined_data, type == data_orig_name),
               aes(label = scales::comma(n)), 
               vjust = 1.5, 
@@ -267,6 +291,7 @@ distrib_compar <- function(data_orig,
          y = "Percentage of total requests",
          title = "Distribution diagram",
          subtitle = type) +
+    #this is needed for legend
     scale_fill_manual(values = fill_values,
                       # labels = c(data_compar_name, data_orig_name),
                       limits = c(data_orig_name, data_compar_name)) +
@@ -282,5 +307,6 @@ distrib_compar <- function(data_orig,
   
 }
 
+#functions to call the charts
 distrib_single(data_original, "Type1", 4000)
 distrib_compar(data_original, "Original Data", data_comparison, "Comparison Data", "Type3", 5000)

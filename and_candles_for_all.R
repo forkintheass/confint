@@ -59,7 +59,7 @@ colnames(data) <- c("timeStamp", "group","response", "success")
 #data <- fread("C:\\sample.csv",
 #              header=TRUE,
 #              select=c("timeStamp", "label", "elapsed", "success"),
-#              col.names = c("timeStamp", "label", "elapsed", "success"),
+#              col.names = c("timeStamp", "group", "response", "success"),
 #              colClasses=c(timeStamp = "POSIXct",label = "character",elapsed = "numeric", success = "logical"),
 #              sep = ",",
 #              dec = ".",
@@ -149,6 +149,7 @@ generate_candles_chart <- function (data_for_candles, selected_group) {
   # na_values <- data.frame(interval = absent_intervals, response = -1)
   # filtered_values_that_do_not_fit <- bind_rows(filtered_values_that_do_not_fit, na_values)
   
+  #main chart
   candles_chart <- ggplot(boxplot_data, aes(x = factor(interval))) +
     
     geom_rect(aes(fill = "success", 
@@ -187,7 +188,7 @@ generate_candles_chart <- function (data_for_candles, selected_group) {
     
     scale_color_manual(values = c("TRUE" = success_color, "FALSE" = fail_color)) +
     
-    #geom_jitter() - use for different representation
+    #geom_jitter() - use for different representation of the dots
     
     scale_fill_manual(values = c("success" = success_color, "fail" = fail_color)) +
     

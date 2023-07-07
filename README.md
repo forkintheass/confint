@@ -1,6 +1,6 @@
 # confint visualisations package
 
-## and_candles_for_all
+## and_candles_for_all.R
 
 Builds candles which reflect percentiles, outliers and pass/fail ratio.
 
@@ -19,7 +19,9 @@ timeStamp,elapsed,label,success
 2024/02/19 14:09:28.070,93,Logout,FALSE
 ```
 
-Or use built-in data generation.
+...the columns can have different names. But you have to specify them in your code then.
+
+...or use built-in data generation.
 
 #### Idea
 
@@ -53,7 +55,7 @@ Use `####CHART SETTINGS####`
 
 ------------------------------------------------------------------------
 
-## distributions
+## distributions.R
 
 Builds distributions which reflects
 
