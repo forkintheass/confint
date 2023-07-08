@@ -1,5 +1,13 @@
 # confint visualisations package
 
+Set of data visualisation ideas created in R.
+
+R is just an instrument, any other tool can be used, if necessary.
+
+Each separate file is one type of the graph. Follow the description of each one.
+
+------------------------------------------------------------------------
+
 ## and_candles_for_all.R
 
 Builds candles which reflect percentiles, outliers and pass/fail ratio.
