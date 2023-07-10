@@ -155,7 +155,9 @@ distrib_single <- function(data, type, limit) {
          subtitle = type) +
     theme_minimal() +
     theme(axis.text.x = element_text(margin = margin(t = 10, b = 10)),
-          plot.subtitle = element_text(color = "#777777"))
+          plot.subtitle = element_text(color = "#777777"),
+          panel.grid.minor = element_blank()
+          )
   
   return(distrib)
 }
@@ -300,7 +302,8 @@ distrib_compar <- function(data_orig,
           legend.title = element_blank(),
           plot.subtitle = element_text(color = "#777777"),
           legend.position = "inside",
-          legend.position.inside = c(0.85, 0.85)
+          legend.position.inside = c(0.85, 0.85),
+          panel.grid.minor = element_blank()
     )
   
   return(distrib_comparison)

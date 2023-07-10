@@ -65,7 +65,7 @@ Use `####CHART SETTINGS####`
 
 ## distributions.R
 
-Builds distributions which reflects
+Builds distributions which reflects quantity of responses within the specified interval and over it.
 
 #### Examples
 
@@ -86,13 +86,13 @@ Or use built-in data generation.
 
 #### Idea
 
-This is a slightly enhanced distribution diagram.
+This is an enhanced distribution diagram.
 
-The idea is to drill-down onto intervals everything that is lying inside the limit (potentially: specified SLA) and then everything that is higher than this limit.
+The diagram divides data into intervals within a specified limit (for example, a specified SLA time) and also shows data exceeding this limit.
 
-Comparison of such distributions was always the trickiest thing: putting one semi-transparent layer over other makes it hard to distinguish what is what. So for the comparison a pattern-applied bars are quite suitable for this goal, however not available in all the tools.
+Comparing these distributions can be challenging. Overlaying semi-transparent layers makes it difficult to distinguish values between data samples. Pattern-applied bars are suitable for this purpose, though not all tools support them.
 
-As an addition, the statistics for median value are added (which can be for sure changed to any other statistics, like 95 percentile) and handled when median is out of bound of the main chart.
+Additionally, the diagram includes statistics for the median value (which can be replaced with other statistics, such as the 95th percentile) and indicates when the median is outside the main chart's bounds.
 
 #### Usage
 
@@ -102,4 +102,4 @@ For comparison distribution: `distrib_single(data_original, data_original_name_f
 
 #### Settings
 
-Use `####CHART SETTINGS####`
+Use `####CHART SETTINGS####` section to specify look and feel.
