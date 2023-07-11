@@ -1,105 +1,63 @@
-# confint visualisations package
+# 🎨 Confint Visualisations
 
-Set of data visualisation ideas created in R.
+**A collection of data visualisation ideas implemented in R — free to use and adapt.**
 
-R is just an instrument, any other tool can be used, if necessary.
+During my career as a performance engineer I had to visualise the data in a way that helps to analyse and present it. And I must admit sometimes this turned to be quite tricky.
 
-Each separate file is one type of the graph. Follow the description of each one.
+This project is more ofa a **set of concepts** rather than a code for visualising performance and statistical data in intuitive ways. Nevertheless, I provide code written in **R** language so you can reuse the ideas in your project.
 
-------------------------------------------------------------------------
+Each **R** script represents a unique visualisation idea. And I will be adding more.
 
-## and_candles_for_all.R
+Note, that **R** is just an instrument — you can reproduce the same ideas in Python, JavaScript, or any other tool you'd like.
 
-Builds candles which reflect percentiles, outliers and pass/fail ratio.
+---
 
-#### Example
+## 🧭 Overview
 
-![](images/clipboard-3874127004.png)
+Each file in this repository corresponds to one visualisation concept:
 
-#### Data
+| Script                                                                                                     | Purpose                                                    | Example                              |
+|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|--------------------------------------|
+| [and_candles_for_all.R](https://github.com/yourusername/confint-visualisations/wiki/and_candles_for_all.R) | Percentile candles reflecting outliers and pass/fail ratio | ![](images/clipboard-3874127004.png) |
+| [distributions.R](https://github.com/yourusername/confint-visualisations/wiki/distributions.R)             | Enhanced distribution diagrams with SLA comparison         | ![](images/distrib_single.png)       |
 
-Input the file with the following columns:
+👉 Explore the full documentation in the **[Wiki](https://github.com/yourusername/confint-visualisations/wiki)**.
 
-```         
-timeStamp,elapsed,label,success
-2024/02/19 14:07:28.070,1605,Login,TRUE
-2024/02/19 14:08:28.070,1034,GetTime,TRUE
-2024/02/19 14:09:28.070,93,Logout,FALSE
-```
+---
 
-...the columns can have different names. But you have to specify them in your code then.
+## 🚀 Quick Start
 
-...or use built-in data generation.
+1. Clone this repository  
+   ```bash
+   git clone https://github.com/yourusername/confint-visualisations.git
+   ```
 
-#### Idea
+2. Open R and source any script you want to explore:  
+   ```r
+   source("and_candles_for_all.R")
+   generate_candles_chart(your_data, "Login")
+   ```
 
-This one is enhance boxplot with whiskers chart to produce more accessible visualisation of changing response time.
+3. Or use built-in data generators provided in each script.
 
-Splits the entire input time interval to the defined quantity of candles and visualises data as the candle of:
+---
 
--   defined lower percentile (`default: min value or 0p`)
+## 🧠 Concept
 
--   defined higher percentile (`default: 95p`)
+These visualisations aim to:
+- Make statistical characteristics **visually intuitive**
+- Enhance classic plots (boxplots, histograms) with **context and comparability**
+- Support **performance testing and SLA analysis**
 
--   ratio of passed and failed requests during each interval (success = TRUE / FALSE)
+---
 
--   all outliers higher than higher percentile
+## 🤝 Contributing
 
-    -   main chart contains all the data within multiplier of max of observed 95p value (`default: 1.5`)
+Ideas, improvements, and additional visualisation types are welcome!  
+Feel free to fork and submit a pull request, open an issue with your proposal or ask the question.
 
-    -   additional squeezed chart contains all the data above main chart
+---
 
-    -   outliers are colorized in the same way as success = TRUE / FALSE
+## 📄 License
 
--   Legend is added.
-
-#### Usage
-
-Call `generate_candles_chart(your_data, name_of_your_label)`.
-
-#### Settings
-
-Use `####CHART SETTINGS####`
-
-------------------------------------------------------------------------
-
-## distributions.R
-
-Builds distributions which reflects quantity of responses within the specified interval and over it.
-
-#### Examples
-
-![](images/distrib_single.png) ![](images/distrib_compar.png)
-
-#### Data
-
-Input the file with the following columns:
-
-```         
-response,group
-1605,Login
-1034,GetTime
-93,Logout
-```
-
-Or use built-in data generation.
-
-#### Idea
-
-This is an enhanced distribution diagram.
-
-The diagram divides data into intervals within a specified limit (for example, a specified SLA time) and also shows data exceeding this limit.
-
-Comparing these distributions can be challenging. Overlaying semi-transparent layers makes it difficult to distinguish values between data samples. Pattern-applied bars are suitable for this purpose, though not all tools support them.
-
-Additionally, the diagram includes statistics for the median value (which can be replaced with other statistics, such as the 95th percentile) and indicates when the median is outside the main chart's bounds.
-
-#### Usage
-
-For single distribution: `distrib_single(data_original, your_request_type_to_filter, your_sla))`.
-
-For comparison distribution: `distrib_single(data_original, data_original_name_for_legend, data_comparison, data_comparison_name_for_legend, your_request_type_to_filter, your_sla))`.
-
-#### Settings
-
-Use `####CHART SETTINGS####` section to specify look and feel.
+This project is released under the MIT License — free for any use.
