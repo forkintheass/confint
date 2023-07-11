@@ -16,12 +16,12 @@ Note, that **R** is just an instrument — you can reproduce the same ideas in P
 
 Each file in this repository corresponds to one visualisation concept:
 
-| Script                                                                                                     | Purpose                                                    | Example                              |
-|------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|--------------------------------------|
-| [and_candles_for_all.R](https://github.com/yourusername/confint-visualisations/wiki/and_candles_for_all.R) | Percentile candles reflecting outliers and pass/fail ratio | ![](images/clipboard-3874127004.png) |
-| [distributions.R](https://github.com/yourusername/confint-visualisations/wiki/distributions.R)             | Enhanced distribution diagrams with SLA comparison         | ![](images/distrib_single.png)       |
+| Script                                                                                      | Purpose                                                    | Example                              |
+|---------------------------------------------------------------------------------------------|------------------------------------------------------------|--------------------------------------|
+| [and_candles_for_all.R](https://github.com/forkintheass/confint/wiki/and_candles_for_all.R) | Percentile candles reflecting outliers and pass/fail ratio | ![](images/clipboard-3874127004.png) |
+| [distributions.R](https://github.com/forkintheass/confint/wiki/distributions.R)             | Enhanced distribution diagrams with SLA comparison         | ![](images/distrib_single.png)       |
 
-👉 Explore the full documentation in the **[Wiki](https://github.com/yourusername/confint-visualisations/wiki)**.
+👉 Explore the full documentation in the **[Wiki](https://github.com/forkintheass/confint/wiki)**.
 
 ---
 
