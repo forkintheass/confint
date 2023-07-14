@@ -4,7 +4,7 @@
 
 During my career as a performance engineer I had to visualise the data in a way that helps to analyse and present it. And I must admit sometimes this turned to be quite tricky.
 
-This project is more ofa a **set of concepts** rather than a code for visualising performance and statistical data in intuitive ways. Nevertheless, I provide code written in **R** language so you can reuse the ideas in your project.
+This project is more ofa a **set of concepts** rather than a code for visualising performance and statistical data in intuitive ways. Note that I am deliberately not including here anything very obvious, which is available elsewhere. I am not trying to create a library for any case, as there are great books available on that already, for example, [Fundamentals Of Data Visualisation](https://clauswilke.com/dataviz/directory-of-visualizations.html) by Mr. Claus Wilke. I only want to provide personal ideas **which I found practical** in my work. Despite this is more about ideas, I provide code written in **R** language so you can reuse the ideas in your project or analysis.
 
 Each **R** script represents a unique visualisation idea. And I will be adding more.
 
